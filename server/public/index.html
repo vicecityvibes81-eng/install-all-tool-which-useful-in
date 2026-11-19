@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Video Clipping Studio | Antigravity</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon">🎬</div>
+        <div class="logo-text">
+          <h1>Video Clipping Studio</h1>
+          <p>Universal Video Trimming, Shorts Creator & AI Tools Suite</p>
+        </div>
+      </div>
+      <div class="status-badge" id="global-status">
+        <span class="pulse-dot"></span>
+        <span id="status-label">All Systems Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-nav">
+    <div class="nav-container">
+      <button class="nav-tab active" data-tab="overview">⚡ Tools Overview</button>
+      <button class="nav-tab" data-tab="trimmer">✂️ Video Trimmer</button>
+      <button class="nav-tab" data-tab="url-clipper">🌐 URL Downloader</button>
+      <button class="nav-tab" data-tab="shorts-maker">📱 9:16 Shorts / Reels</button>
+      <button class="nav-tab" data-tab="silence-cutter">🔇 Silence Cutter</button>
+      <button class="nav-tab" data-tab="scene-detect">🔍 Scene Detector</button>
+      <button class="nav-tab" data-tab="subtitles">🎙️ Subtitles & Whisper</button>
+      <button class="nav-tab" data-tab="cli-guide">💻 CLI Cheatsheet</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- 1. OVERVIEW TAB -->
+    <section id="tab-overview" class="tab-pane active">
+      <div class="card">
+        <div class="card-title">🚀 Installed Video Clipping Ecosystem</div>
+        <p class="card-desc">
+          Every tool, library, and AI model essential for modern video clipping is installed, configured, and accessible via terminal CLI or this web studio interface.
+        </p>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+          <button class="btn btn-secondary btn-sm" id="btn-refresh-status">🔄 Refresh Tool Status</button>
+          <button class="btn btn-primary btn-sm" id="btn-load-demo">🎬 Generate Demo Sample Video</button>
+        </div>
+
+        <div class="tools-grid" id="tools-container">
+          <!-- Dynamically populated -->
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">FFmpeg 7.0.2</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">Core engine for lossless clipping, filters, transcoding & audio sync.</div>
+            <div class="tool-meta">ffmpeg, ffprobe</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">yt-dlp</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">Direct timestamp clip downloader for YouTube, Twitch, TikTok, & 1000+ sites.</div>
+            <div class="tool-meta">yt-dlp --download-sections</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">PySceneDetect</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">Autonomous visual scene cut detector that segments videos into clips.</div>
+            <div class="tool-meta">scenedetect</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">Auto-Editor</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">Automatically strips awkward pauses and silences from podcasts and talking heads.</div>
+            <div class="tool-meta">auto-editor</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">Faster-Whisper</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">High-speed speech-to-text engine with CTranslate2 for auto-captions and SRT.</div>
+            <div class="tool-meta">faster-whisper</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-header">
+              <span class="tool-name">MoviePy 2.x</span>
+              <span class="tool-badge">Installed</span>
+            </div>
+            <div class="tool-desc">Python video editing library for programmatic clipping and effects.</div>
+            <div class="tool-meta">moviepy</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. VIDEO TRIMMER TAB -->
+    <section id="tab-trimmer" class="tab-pane">
+      <div class="card">
+        <div class="card-title">✂️ Precision Video Trimmer</div>
+        <p class="card-desc">
+          Trim videos with millisecond accuracy. Choose <strong>Lossless Cut</strong> for 0-second instant export without re-encoding, or <strong>Re-encode</strong> for exact keyframe cuts.
+        </p>
+
+        <div class="video-preview-wrapper" id="trimmer-preview-wrapper">
+          <video id="trimmer-video" controls playsinline></video>
+        </div>
+
+        <form id="form-trimmer">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Video File</label>
+              <input type="file" id="trimmer-file" accept="video/*">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-use-sample-trim">Or Use Demo Sample</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Time (HH:MM:SS or Sec)</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="trimmer-start" value="00:00:02" placeholder="00:00:00">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-set-in" title="Set to current video position">Set In [</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>End Time (HH:MM:SS or Sec)</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="trimmer-end" value="00:00:08" placeholder="00:00:10">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-set-out" title="Set to current video position">Set Out ]</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Cutting Mode</label>
+            <select id="trimmer-mode">
+              <option value="lossless">⚡ Instant Lossless Cut (-c copy, 0 sec render)</option>
+              <option value="reencode">🎯 Frame-Accurate Re-encode (libx264, exact I-frames)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-trim">
+            <span>✂️ Cut & Export Clip</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="trimmer-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Clip Created Successfully!</h4>
+          <p id="trimmer-result-info" style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);"></p>
+          <video id="trimmer-result-video" controls playsinline style="max-height: 280px; margin-bottom: 1rem;"></video>
+          <div>
+            <a href="#" class="btn btn-primary btn-sm" id="trimmer-download" download>⬇️ Download Clip</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. URL CLIPPER TAB -->
+    <section id="tab-url-clipper" class="tab-pane">
+      <div class="card">
+        <div class="card-title">🌐 URL Clip Downloader (yt-dlp)</div>
+        <p class="card-desc">
+          Download clips directly from <strong>YouTube, Twitch, TikTok, Vimeo, or Twitter</strong> by entering start and end timestamps. Only the selected section is downloaded!
+        </p>
+
+        <form id="form-ytdl">
+          <div class="form-group">
+            <label>Video URL</label>
+            <input type="url" id="ytdl-url" placeholder="https://www.youtube.com/watch?v=..." required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Timestamp</label>
+              <input type="text" id="ytdl-start" value="00:00:10" placeholder="00:01:30" required>
+            </div>
+            <div class="form-group">
+              <label>End Timestamp</label>
+              <input type="text" id="ytdl-end" value="00:00:30" placeholder="00:02:15" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Quality Format</label>
+            <select id="ytdl-format">
+              <option value="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best">Best MP4 (Up to 1080p/4K)</option>
+              <option value="bestaudio">Audio Only (MP3/M4A)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-ytdl">
+            <span>📥 Download Clip</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="ytdl-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Clip Downloaded!</h4>
+          <p id="ytdl-result-info" style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);"></p>
+          <video id="ytdl-result-video" controls playsinline style="max-height: 280px; margin-bottom: 1rem;"></video>
+          <div>
+            <a href="#" class="btn btn-primary btn-sm" id="ytdl-download" download>⬇️ Download MP4</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 9:16 SHORTS / REELS TAB -->
+    <section id="tab-shorts-maker" class="tab-pane">
+      <div class="card">
+        <div class="card-title">📱 9:16 Vertical Shorts & Reels Maker</div>
+        <p class="card-desc">
+          Transform 16:9 landscape clips into vertical 9:16 format (1080x1920) optimized for YouTube Shorts, Instagram Reels, and TikTok.
+        </p>
+
+        <form id="form-shorts">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Upload Video</label>
+              <input type="file" id="shorts-file" accept="video/*">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-use-sample-short">Use Demo Sample</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Vertical Layout Style</label>
+            <select id="shorts-style">
+              <option value="blur">✨ Blurred Background Fill (Social Media Viral Highlight Standard)</option>
+              <option value="crop">🔍 Center Crop 9:16 (Zoom in)</option>
+              <option value="fit">📐 Letterbox Fit (Black bars)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-accent" id="btn-submit-shorts">
+            <span>📱 Generate 9:16 Short</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="shorts-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Vertical Short Ready!</h4>
+          <p id="shorts-result-info" style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);"></p>
+          <video id="shorts-result-video" controls playsinline style="max-height: 380px; margin-bottom: 1rem;"></video>
+          <div>
+            <a href="#" class="btn btn-primary btn-sm" id="shorts-download" download>⬇️ Download 9:16 Video</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. SILENCE CUTTER TAB -->
+    <section id="tab-silence-cutter" class="tab-pane">
+      <div class="card">
+        <div class="card-title">🔇 Auto Silence Cutter</div>
+        <p class="card-desc">
+          Automatically detect dead air, pauses, and awkward silences in speech, podcasts, or commentary, and tightly cut the video using <strong>Auto-Editor</strong>.
+        </p>
+
+        <form id="form-silence">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Upload Talking Video</label>
+              <input type="file" id="silence-file" accept="video/*">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-use-sample-silence">Use Demo Sample</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Silence Volume Threshold</label>
+              <select id="silence-threshold">
+                <option value="4%">Normal (4% - Best for Talking Heads)</option>
+                <option value="2%">Subtle (2% - Keep soft speech)</option>
+                <option value="8%">Aggressive (8% - Tight pacing, zero pauses)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Padding Margin</label>
+              <input type="text" id="silence-margin" value="0.1s" placeholder="0.1s">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-silence">
+            <span>🔇 Remove Silences</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="silence-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Silence Cut Complete!</h4>
+          <p id="silence-result-info" style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);"></p>
+          <video id="silence-result-video" controls playsinline style="max-height: 280px; margin-bottom: 1rem;"></video>
+          <div>
+            <a href="#" class="btn btn-primary btn-sm" id="silence-download" download>⬇️ Download Tight Cut</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. SCENE DETECTOR TAB -->
+    <section id="tab-scene-detect" class="tab-pane">
+      <div class="card">
+        <div class="card-title">🔍 Visual Scene Detector & Splitter</div>
+        <p class="card-desc">
+          Automatically detect scene changes, camera cuts, and transitions in long videos using <strong>PySceneDetect</strong>, splitting the video into individual scene clips.
+        </p>
+
+        <form id="form-scenes">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Upload Video</label>
+              <input type="file" id="scenes-file" accept="video/*">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-use-sample-scenes">Use Demo Sample</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sensitivity Threshold (Default: 27.0)</label>
+            <input type="text" id="scenes-threshold" value="27.0" placeholder="27.0">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-scenes">
+            <span>🔍 Detect & Export Scenes</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="scenes-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Scenes Segmented!</h4>
+          <div id="scenes-list" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. SUBTITLES & WHISPER TAB -->
+    <section id="tab-subtitles" class="tab-pane">
+      <div class="card">
+        <div class="card-title">🎙️ Speech-to-Text & Subtitles (Whisper)</div>
+        <p class="card-desc">
+          Transcribe speech in video clips into word-accurate <strong>SRT / VTT subtitles</strong> using <strong>Faster-Whisper</strong>, or burn stylized captions directly onto your clips.
+        </p>
+
+        <form id="form-whisper">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Upload Clip</label>
+              <input type="file" id="whisper-file" accept="video/*,audio/*">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn btn-secondary" style="width: 100%;" id="btn-use-sample-whisper">Use Demo Sample</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Whisper Model</label>
+              <select id="whisper-model">
+                <option value="tiny">Tiny (Ultra-fast, lowest CPU)</option>
+                <option value="base" selected>Base (Recommended balance)</option>
+                <option value="small">Small (High accuracy)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Burn Subtitles into Video?</label>
+              <select id="whisper-burn">
+                <option value="false">No (Generate .SRT subtitle file only)</option>
+                <option value="true">Yes (Burn captions directly into MP4)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-whisper">
+            <span>📝 Transcribe & Generate Subtitles</span>
+          </button>
+        </form>
+
+        <div class="result-box" id="whisper-result">
+          <h4 style="margin-bottom: 0.5rem; color: var(--accent-green);">🎉 Transcription Complete!</h4>
+          <pre><code id="whisper-srt-preview"></code></pre>
+          <div style="margin-top: 1rem;">
+            <a href="#" class="btn btn-primary btn-sm" id="whisper-download" download>⬇️ Download SRT Subtitles</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CLI CHEATSHEET TAB -->
+    <section id="tab-cli-guide" class="tab-pane">
+      <div class="card">
+        <div class="card-title">💻 CLI Commands & Antigravity Helpers</div>
+        <p class="card-desc">
+          All helper tools are installed in your shell PATH. You can run them directly in the terminal or integrate them into automated scripts.
+        </p>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">1. Quick Lossless Trim</h3>
+        <div class="code-wrapper">
+          <pre><code># vclip <input> <start> <end> [output]
+vclip podcast.mp4 00:01:30 00:02:15 highlight.mp4
+
+# Re-encode for frame-accurate cuts
+vclip podcast.mp4 10 45 clip.mp4 --reencode --crf 18</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">2. Download Specific Clip from URL (YouTube/Twitch/TikTok)</h3>
+        <div class="code-wrapper">
+          <pre><code># vdl <url> <start> <end> [output.mp4]
+vdl "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 00:00:15 00:00:45 rick_clip.mp4</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">3. Convert 16:9 Landscape to 9:16 Vertical Short</h3>
+        <div class="code-wrapper">
+          <pre><code># Blurred background standard (TikTok/Reels/Shorts)
+vshort clip.mp4 viral_short.mp4 --style blur
+
+# Center crop
+vshort clip.mp4 viral_short.mp4 --style crop</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">4. Strip Awkward Silences and Dead Air</h3>
+        <div class="code-wrapper">
+          <pre><code>vsilence interview.mp4 tight_interview.mp4 --threshold 4%</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">5. Split Video by Scene Transitions</h3>
+        <div class="code-wrapper">
+          <pre><code>vscenes gameplay.mp4 ./output_scenes/ --threshold 27</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">6. Speech-to-Text & Auto Subtitles (Whisper)</h3>
+        <div class="code-wrapper">
+          <pre><code># Generate SRT subtitles
+vsub clip.mp4
+
+# Burn subtitles directly into video
+vsub clip.mp4 --burn</code></pre>
+        </div>
+
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 1rem; color: var(--accent-cyan);">7. Media Inspector</h3>
+        <div class="code-wrapper">
+          <pre><code>vinfo clip.mp4</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
