@@ -28,6 +28,18 @@
       "created_at": "2026-11-19T01:54:45.910Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "1a31d57d-9b8c-4bfe-876a-0db5f0ce6224",
+      "role": "user",
+      "content": "vdl \"https://www.youtube.com/watch?v=VIDEO_ID\" 00:00:15 00:00:45 clip.mp4",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-19T02:20:12.412Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
