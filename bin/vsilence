@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""
+vsilence: Automatic silence cutter for video clips and talking heads.
+Powered by Auto-Editor and FFmpeg.
+"""
+import sys
+import os
+import argparse
+import subprocess
+import shutil
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="vsilence: Automatically cut out silent pauses and dead air from videos",
+        epilog="Examples:\n  vsilence interview.mp4 tight_interview.mp4\n  vsilence clip.mp4 --threshold 4%",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("input", help="Input video file")
+    parser.add_argument("output", nargs="?", default=None, help="Output trimmed video")
+    parser.add_argument("--threshold", default="4%", help="Silence volume threshold (e.g., 4%% or -30dB, default: 4%%)")
+    parser.add_argument("--margin", default="0.1s", help="Margin/padding before and after speech (default: 0.1s)")
+
+    args = parser.parse_args()
+    if not os.path.isfile(args.input):
+        print(f"Error: Input file '{args.input}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+    if not args.output:
+        base, ext = os.path.splitext(args.input)
+        args.output = f"{base}_no_silence{ext}"
+
+    auto_editor = shutil.which("auto-editor") or "/home/agent/.local/bin/auto-editor"
+
+    cmd = [
+        auto_editor,
+        args.input,
+        "--edit", f"audio:threshold={args.threshold}",
+        "--margin", args.margin,
+        "--output", args.output
+    ]
+
+    print(f"🔇 Analyzing and removing silence from '{args.input}'...")
+    ret = subprocess.run(cmd)
+    if ret.returncode == 0:
+        print(f"✅ Silence cut complete! Saved to: {args.output}")
+    else:
+        print(f"❌ Auto-editor failed with exit code {ret.returncode}", file=sys.stderr)
+        sys.exit(ret.returncode)
+
+if __name__ == "__main__":
+    main()

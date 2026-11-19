@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+"""
+vsub: Automatic speech transcription and subtitle generator for video clips.
+Powered by faster-whisper and FFmpeg.
+"""
+import sys
+import os
+import argparse
+import subprocess
+import shutil
+
+def format_timestamp(seconds: float, srt: bool = True) -> str:
+    hrs = int(seconds // 3600)
+    mins = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds - int(seconds)) * 1000)
+    sep = "," if srt else "."
+    return f"{hrs:02d}:{mins:02d}:{secs:02d}{sep}{millis:03d}"
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="vsub: Transcribe video clips to SRT/VTT subtitles or burn captions directly into video",
+        epilog="Examples:\n  vsub clip.mp4\n  vsub clip.mp4 --burn\n  vsub clip.mp4 --model base",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("input", help="Input video or audio file")
+    parser.add_argument("-o", "--output", help="Output subtitle file (.srt/.vtt) or captioned video")
+    parser.add_argument("-m", "--model", default="tiny", choices=["tiny", "base", "small", "medium"], help="Whisper model size (default: tiny for maximum speed)")
+    parser.add_argument("--burn", action="store_true", help="Burn subtitles directly into video file")
+    parser.add_argument("--format", choices=["srt", "vtt"], default="srt", help="Subtitle format (default: srt)")
+
+    args = parser.parse_args()
+    if not os.path.isfile(args.input):
+        print(f"Error: Input file '{args.input}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+    base, ext = os.path.splitext(args.input)
+    sub_file = args.output if (args.output and args.output.endswith(('.srt', '.vtt'))) else f"{base}.{args.format}"
+
+    print(f"🎙️ Loading Faster-Whisper ({args.model} model)...")
+    from faster_whisper import WhisperModel
+
+    model = WhisperModel(args.model, device="cpu", compute_type="int8")
+    print(f"📝 Transcribing '{args.input}'...")
+    segments, info = model.transcribe(args.input, beam_size=5)
+
+    print(f"Detected language: {info.language} (probability: {info.language_probability:.2f})")
+
+    with open(sub_file, "w", encoding="utf-8") as f:
+        if args.format == "vtt":
+            f.write("WEBVTT\n\n")
+        idx = 1
+        for segment in segments:
+            start_str = format_timestamp(segment.start, srt=(args.format == "srt"))
+            end_str = format_timestamp(segment.end, srt=(args.format == "srt"))
+            text = segment.text.strip()
+            if args.format == "srt":
+                f.write(f"{idx}\n{start_str} --> {end_str}\n{text}\n\n")
+            else:
+                f.write(f"{start_str} --> {end_str}\n{text}\n\n")
+            print(f"  [{start_str} -> {end_str}] {text}")
+            idx += 1
+
+    print(f"✅ Subtitles saved to: {sub_file}")
+
+    if args.burn:
+        burned_video = f"{base}_captioned{ext}" if not args.output or args.output.endswith(('.srt', '.vtt')) else args.output
+        ffmpeg = shutil.which("ffmpeg") or "/home/agent/.local/bin/ffmpeg"
+        print(f"🔥 Burning subtitles into video: {burned_video}...")
+        sub_escaped = sub_file.replace(":", "\\:").replace("'", "\\'")
+        cmd = [
+            ffmpeg, "-y",
+            "-i", args.input,
+            "-vf", f"subtitles='{sub_escaped}'",
+            "-c:a", "copy",
+            "-c:v", "libx264",
+            "-crf", "20",
+            burned_video
+        ]
+        ret = subprocess.run(cmd)
+        if ret.returncode == 0:
+            print(f"🎉 Subtitled video created: {burned_video}")
+
+if __name__ == "__main__":
+    main()

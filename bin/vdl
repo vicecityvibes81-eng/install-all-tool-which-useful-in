@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""
+vdl: Download specific timestamp clips directly from YouTube, Twitch, TikTok, etc.
+Powered by yt-dlp and FFmpeg.
+"""
+import sys
+import os
+import argparse
+import subprocess
+import shutil
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="vdl: Download clips directly from video URLs (YouTube, Twitch, TikTok, etc.)",
+        epilog="Examples:\n  vdl https://www.youtube.com/watch?v=dQw4w9WgXcQ 00:00:10 00:00:30 clip.mp4\n  vdl https://twitch.tv/videos/123456789 01:15:00 01:16:30 twitch_highlight.mp4",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("url", help="Video URL (YouTube, Twitch, TikTok, Twitter, Vimeo, etc.)")
+    parser.add_argument("start", help="Start time (e.g. 00:01:20 or 80)")
+    parser.add_argument("end", help="End time (e.g. 00:01:50 or 110)")
+    parser.add_argument("output", nargs="?", default="clip.mp4", help="Output filename (default: clip.mp4)")
+    parser.add_argument("-f", "--format", default="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best", help="yt-dlp format selector")
+
+    args = parser.parse_args()
+    ytdlp = shutil.which("yt-dlp") or "/home/agent/.local/bin/yt-dlp"
+
+    print(f"📥 Downloading clip from {args.url} [{args.start} to {args.end}]...")
+    section_arg = f"*{args.start}-{args.end}"
+
+    cmd = [
+        ytdlp,
+        "--download-sections", section_arg,
+        "-f", args.format,
+        "--force-keyframes-at-cuts",
+        "-o", args.output,
+        args.url
+    ]
+
+    ret = subprocess.run(cmd)
+    if ret.returncode == 0:
+        print(f"✅ Successfully downloaded clip to: {args.output}")
+    else:
+        print(f"❌ Download failed with exit code {ret.returncode}", file=sys.stderr)
+        sys.exit(ret.returncode)
+
+if __name__ == "__main__":
+    main()

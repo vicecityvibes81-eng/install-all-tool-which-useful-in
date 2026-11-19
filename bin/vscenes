@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""
+vscenes: Automatic scene cut detection and video splitter.
+Powered by PySceneDetect and FFmpeg.
+"""
+import sys
+import os
+import argparse
+import subprocess
+import shutil
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="vscenes: Automatically detect scene cuts and split video into clips",
+        epilog="Examples:\n  vscenes movie.mp4 ./output_clips/\n  vscenes gameplay.mp4 ./clips/ --threshold 27",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("input", help="Input video file")
+    parser.add_argument("output_dir", nargs="?", default="scenes_output", help="Output directory for scene clips (default: scenes_output)")
+    parser.add_argument("-t", "--threshold", type=float, default=27.0, help="Cut detection threshold (default: 27.0)")
+    parser.add_argument("-m", "--min-scene-len", default="1s", help="Minimum duration of a scene (default: 1s)")
+
+    args = parser.parse_args()
+    if not os.path.isfile(args.input):
+        print(f"Error: Input video '{args.input}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+    os.makedirs(args.output_dir, exist_ok=True)
+    scenedetect = shutil.which("scenedetect") or "/home/agent/.local/bin/scenedetect"
+
+    cmd = [
+        scenedetect,
+        "-i", args.input,
+        "-o", args.output_dir,
+        "detect-content", f"-t={args.threshold}", f"-m={args.min_scene_len}",
+        "split-video",
+        "list-scenes"
+    ]
+
+    print(f"🔍 Detecting scenes in '{args.input}' (threshold={args.threshold})...")
+    ret = subprocess.run(cmd)
+    if ret.returncode == 0:
+        print(f"✅ Scenes exported into directory: {args.output_dir}")
+    else:
+        print(f"❌ Scene detection failed with exit code {ret.returncode}", file=sys.stderr)
+        sys.exit(ret.returncode)
+
+if __name__ == "__main__":
+    main()

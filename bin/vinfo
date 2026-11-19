@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""
+vinfo: Display comprehensive video clip media information.
+"""
+import sys
+import os
+import argparse
+import json
+import subprocess
+import shutil
+
+def main():
+    parser = argparse.ArgumentParser(description="vinfo: Print clean technical info for video clips")
+    parser.add_argument("input", help="Input video file")
+    parser.add_argument("--json", action="store_true", help="Output raw JSON")
+
+    args = parser.parse_args()
+    if not os.path.isfile(args.input):
+        print(f"Error: File '{args.input}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+    ffprobe = shutil.which("ffprobe") or "/home/agent/.local/bin/ffprobe"
+    cmd = [
+        ffprobe,
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        "-show_streams",
+        args.input
+    ]
+
+    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if res.returncode != 0:
+        print(f"Error reading media info: {res.stderr}", file=sys.stderr)
+        sys.exit(1)
+
+    data = json.loads(res.stdout)
+    if args.json:
+        print(json.dumps(data, indent=2))
+        return
+
+    fmt = data.get("format", {})
+    streams = data.get("streams", [])
+
+    v_stream = next((s for s in streams if s.get("codec_type") == "video"), None)
+    a_stream = next((s for s in streams if s.get("codec_type") == "audio"), None)
+
+    dur = float(fmt.get("duration", 0))
+    mins, secs = divmod(dur, 60)
+    hrs, mins = divmod(mins, 60)
+
+    size_mb = float(fmt.get("size", 0)) / (1024 * 1024)
+    bitrate_kbps = int(fmt.get("bit_rate", 0)) // 1000 if fmt.get("bit_rate") else 0
+
+    print("=" * 55)
+    print(f"📹 Media Info: {os.path.basename(args.input)}")
+    print("=" * 55)
+    print(f"📁 File Size:   {size_mb:.2f} MB")
+    print(f"⏱️  Duration:    {int(hrs):02d}:{int(mins):02d}:{secs:06.3f} ({dur:.2f}s)")
+    print(f"📶 Bitrate:     {bitrate_kbps} kbps")
+    print(f"📦 Container:   {fmt.get('format_long_name', fmt.get('format_name', 'Unknown'))}")
+
+    if v_stream:
+        w = v_stream.get("width")
+        h = v_stream.get("height")
+        codec = v_stream.get("codec_name")
+        fps = v_stream.get("r_frame_rate", "Unknown")
+        if "/" in fps:
+            num, den = fps.split("/")
+            fps_val = f"{float(num)/float(den):.2f}" if float(den) > 0 else fps
+        else:
+            fps_val = fps
+        aspect = f"{w}:{h}"
+        if w and h:
+            ratio = round(w / h, 2)
+            if ratio == 1.78 or ratio == 1.77:
+                aspect += " (16:9 Landscape)"
+            elif ratio == 0.56:
+                aspect += " (9:16 Vertical Short/Reel)"
+            elif ratio == 1.0:
+                aspect += " (1:1 Square)"
+            elif ratio == 1.33:
+                aspect += " (4:3 Classic)"
+
+        print("\n🎬 Video Stream:")
+        print(f"   Codec:      {codec} ({v_stream.get('profile', '')})")
+        print(f"   Resolution: {w}x{h} -> {aspect}")
+        print(f"   Frame Rate: {fps_val} fps")
+        print(f"   Pixel Fmt:  {v_stream.get('pix_fmt')}")
+
+    if a_stream:
+        print("\n🔊 Audio Stream:")
+        print(f"   Codec:      {a_stream.get('codec_name')}")
+        print(f"   Channels:   {a_stream.get('channels')} ({a_stream.get('channel_layout', 'stereo')})")
+        print(f"   Sample Rate:{a_stream.get('sample_rate')} Hz")
+    print("=" * 55)
+
+if __name__ == "__main__":
+    main()
