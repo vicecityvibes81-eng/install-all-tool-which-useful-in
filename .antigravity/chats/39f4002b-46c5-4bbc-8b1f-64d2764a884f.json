@@ -4,5 +4,18 @@
   "createdAt": "2026-11-19T01:43:07.914Z",
   "filename": "39f4002b-46c5-4bbc-8b1f-64d2764a884f.json",
   "geminiStarted": false,
-  "messages": []
+  "messages": [
+    {
+      "id": "b7da3896-5924-44df-ab8e-ddb9634931d6",
+      "role": "user",
+      "content": "install all tools which useful in video cliping",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-19T01:43:09.745Z",
+      "sender": "ios",
+      "is_cancelled": false
+    }
+  ]
 }
